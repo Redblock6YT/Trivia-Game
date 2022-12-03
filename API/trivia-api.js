@@ -7,6 +7,7 @@ const app = express();
 const axios = require("axios");
 var privateKey = fs.readFileSync("rygb_cert/cloudflare/rygb.tech.pem", "utf8");
 var certificate = fs.readFileSync("rygb_cert/cloudflare/rygb.tech.crt", "utf8");
+const credentials = { key: privateKey, cert: certificate };
 app.use(express.json());
 app.use(compression());
 var httpsServer = https.createServer(credentials, app);
