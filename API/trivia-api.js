@@ -9,7 +9,7 @@ var privateKey = fs.readFileSync("rygb_cert/cloudflare/rygb.tech.pem", "utf8");
 var certificate = fs.readFileSync("rygb_cert/cloudflare/rygb.tech.crt", "utf8");
 app.use(express.json());
 app.use(compression());
-
+var httpsServer = https.createServer(credentials, app);
 httpsServer.listen(8444, () => {
   console.log("Private https server listening on port 8444");
 });
