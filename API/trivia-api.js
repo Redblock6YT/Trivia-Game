@@ -15,20 +15,12 @@ httpsServer.listen(8444, () => {
   console.log("Private https server listening on port 8444");
 });
 
-main().catch((err) => console.log(err));
-async function main() {
-  //n1F6exFxenbFx5hJ
-  await mongoose.connect("mongodb+srv://prvAPI:n1F6exFxenbFx5hJ@cluster0.j1einiz.mongodb.net/?retryWrites=true&w=majority", function(err) {
-    if (err) throw err;
-    console.log("> Connected to MongoDB Successfully!");
-  });
-}
-
 app.get("/getTriviaQuestions", async (req, res) => {
   axios({
     method: "get",
     url: "https://opentdb.com/api.php?amount=10",
   }).then((response) => {
-    res.send(response.data);
+    res.status(200).send(response.data);
+    res.end();
   })
 });

@@ -5,7 +5,7 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%) translateY(-50%);
   width: 98%;
   height: 96%;
 }
@@ -14,7 +14,14 @@
   top: 50%;
   position: absolute;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%) translateY(-50%);
+}
+.textContainer2 {
+  top: 50%;
+  position: absolute;
+  width: 80%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
 }
 
 .ename {
@@ -59,9 +66,27 @@
   transition: all .4s ease-in
 }
 
+.minithumbnail {
+  border-radius: 15px;
+  background-color: gray;
+}
+
 .button:hover>svg {
   font-size: 1.2em;
   transform: translateX(-5px)
+}
+
+.carosel {
+  width: 90%;
+  display: grid;
+  grid-template-columns: auto auto auto auto auto auto auto auto auto auto auto auto;
+  grid-gap: 10px;
+  height: 100px;
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
 }
 
 .button:hover {
@@ -76,6 +101,7 @@
   object-fit: cover;
   border-radius: 15px;
   z-index: 0;
+  filter: blur(5px);
 }
 
 @font-face {
@@ -96,6 +122,46 @@
   color: white;
   line-height: normal;
   width: 100%;
+}
+
+.circle2 {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 60px;
+  width: 60px;
+  margin: -65px 0 0 -34px;
+  border: 4px rgba(124, 124, 124, 0.25) solid;
+  border-top: 4px rgb(255, 255, 255) solid;
+  border-radius: 50%;
+  -webkit-animation: spin2 0.7s infinite linear;
+          animation: spin2 0.7s infinite linear;
+}
+
+@-webkit-keyframes spin2 {
+  from {
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(359deg);
+            transform: rotate(359deg);
+  }
+}
+@keyframes spin2 {
+  from {
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(359deg);
+            transform: rotate(359deg);
+    -webkit-transform: rotate(359deg);
+            transform: rotate(359deg);
+  }
 }
 
 .subtext {
