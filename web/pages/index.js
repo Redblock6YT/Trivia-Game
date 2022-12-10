@@ -43,6 +43,8 @@ export default function Home() {
   var correctAnswerElem
   var timerStarted = false;
   var playerElem;
+  var questionText;
+  var answerGrid;
 
   var elems = []
   function checkAnswer(button, amt, correct) {
@@ -185,6 +187,280 @@ export default function Home() {
       }, 300);
     }, 500)
   }
+
+  function chooseFinalAnswer(final) {
+    anime({
+      targets: answerGrid,
+      scale: 0,
+      easing: "easeInOutQuad",
+      complete: function (anim) {
+        for (var i = 0; i < answerGrid.children.length; i++) {
+          answerGrid.children[i].remove()
+        }
+      }
+    })
+    const cutoff = new Audio("cutoff.wav")
+    currentAudio.pause()
+    cutoff.play()
+    if (final == "Letter") {
+      const rand = Math.floor(Math.random() * 5) + 1
+      var letter;
+      maintextcontainer.children[0].innerHTML = "Letter"
+      if (rand == 1) {
+        letter = "I enjoy spending time with my friends and family. We often go out to eat at our favorite restaurants or stay in and cook together. We also enjoy playing games and watching movies together. It's always a good time when we're all together."
+      } else if (rand == 2) {
+        letter = "I love the sound of rain on the roof. It's a soothing and peaceful sound that always makes me feel calm and relaxed. Sometimes I like to sit by the window and watch the rain falling, listening to the soft patter of the drops hitting the glass. It's a simple pleasure, but one that brings me a lot of joy."
+      } else if (rand == 3) {
+        letter = "The leaves on the trees have turned a beautiful shade of orange and red. It's a reminder that fall is here and winter is just around the corner. I love the crisp, cool air and the way the leaves crunch under my feet as I walk. It's a time of year that always makes me feel nostalgic and grateful."
+      } else if (rand == 4) {
+        letter = "I love the smell of freshly baked cookies. It's a sweet and comforting smell that always makes me feel happy and warm inside. I like to bake cookies on the weekends and share them with my friends and family. It's a simple way to show them how much I care about them."
+      } else if (rand == 5) {
+        letter = "I love the sound of the ocean. It's a soothing and peaceful sound that always makes me feel calm and relaxed. Sometimes I like to sit by the window and watch the waves crashing against the shore, listening to the soft patter of the water hitting the sand. It's a simple pleasure, but one that brings me a lot of joy."
+      }
+      const audio = new Audio("question3a.mp3")
+      audio.loop = true;
+      audio.load()
+      anime({
+        targets: questionText,
+        scale: 0,
+        easing: "easeInOutQuad",
+        complete: function (anim) {
+          audio.play()
+          anime({
+            targets: questionText,
+            scale: 1,
+            easing: "easeInOutQuad",
+          })
+          questionText.style.marginTop = "0px"
+          const textArea = document.createElement("textarea");
+          textArea.className = styles.textarea
+          textArea.placeholder = "Start typing here..."
+          const typingaudio = new Audio("letter.mp3")
+          typingaudio.load()
+          const textAreaContainer = document.createElement("div")
+          textAreaContainer.style.margin = "auto";
+          textAreaContainer.style.gridTemplateColumns = "auto";
+          textAreaContainer.style.position = "absolute";
+          textAreaContainer.style.zIndex = "100";
+          textAreaContainer.style.gridGap = "15px";
+          textAreaContainer.style.width = "50%"
+          textAreaContainer.style.top = "50%";
+          textAreaContainer.style.left = "50%";
+          textAreaContainer.style.transform = "translate(-50%, -40%) scale(0)";
+          textAreaContainer.appendChild(textArea)
+          currentClone.appendChild(textAreaContainer)
+          questionText.innerHTML = "I'm going to read a letter to you. Listen carefully and try to type the letter as it is read. I'll give you cash based on how accurate your typing is."
+          setTimeout(() => {
+            anime({
+              targets: audio,
+              volume: 0,
+              easing: "easeInOutQuad"
+            })
+            anime({
+              targets: questionText,
+              scale: 0
+            })
+            anime({
+              targets: textAreaContainer,
+              scale: 1,
+            })
+            console.log(letter)
+            const sentences = letter.split(".");
+            console.log(sentences)
+            //read the sentences aloud using text to speech
+            var msg = new SpeechSynthesisUtterance();
+            questionText.style.marginTop = "-350px"
+            questionText.style.transform = "scale(0.7)"
+            var otheri = 0;
+            typingaudio.volume = 0.2
+            typingaudio.play()
+            setTimeout(() => {
+              for (var i = 0; i < sentences.length; i++) {
+                setTimeout(() => {
+                  const sentence = sentences[otheri];
+                  console.log(sentence)
+                  console.log(i)
+                  questionText.innerHTML = sentence;
+                  anime({
+                    targets: questionText,
+                    scale: 1.1,
+                    easing: "easeInOutQuad",
+                    duration: 500,
+                    complete: function (anim) {
+                      anime({
+                        targets: questionText,
+                        scale: 1,
+                        easing: "easeInOutQuad",
+                        duration: 500,
+                      })
+                    }
+                  })
+                  msg.text = sentence;
+                  window.speechSynthesis.speak(msg);
+                  otheri++;
+                  if (otheri == 5) {
+                    anime({
+                      targets: textAreaContainer,
+                      scale: 0,
+                      easing: "easeInOutQuad",
+                      delay: 1000,
+                      complete: function (anim) {
+                        var total = 10000;
+                        var prepercent = similarity(letter, textArea.value)
+                        var percent = Math.floor(prepercent * 100)
+                        //player gets percent of total based on accuracy
+                        total = Math.floor(total / percent)
+                        questionText.innerHTML = percent + "%"
+                        questionText.style.marginTop = "0px"
+                        setTimeout(() => {
+                          questionText.innerHTML = "$" + total
+                        }, 1000)
+                        anime({
+                          targets: questionText,
+                          rotate: 360,
+                          delay: 1000,
+                          complete: function (anim) {
+                            const playercash = document.getElementById("playercash");
+                            const correct = new Audio("correct.wav")
+                            correct.load()
+                            setTimeout(() => {
+                              anime({
+                                targets: questionText,
+                                translateY: 370,
+                                fontSize: "0px",
+                                complete: function (anim) {
+                                  correct.play()
+                                  playerCash = playerCash + total;
+                                  playercash.innerHTML = "$" + playerCash;
+                                  anime({
+                                    targets: playercash,
+                                    scale: 1.1,
+                                    color: "rgb(22 141 22)",
+                                    complete: function (anim) {
+                                      anime({
+                                        targets: playercash,
+                                        scale: 1,
+                                        color: "rgb(255 255 255)",
+                                        complete: function (anim) {
+                                          backToTitle()
+                                        }
+                                      })
+                                    }
+                                  })
+                                }
+                              })
+                            }, 1000)
+                          }
+                        })
+                      }
+                    })
+                  }
+                }, 7000 * i)
+              }
+            }, 2000)
+
+          }, 5000)
+        }
+      })
+      //const audio = new Audio("letter.mp3")
+    }
+  }
+
+  function backToTitle() {
+    const title = document.getElementById("title");
+    title.style.transform = "translate(170%, 58%)"
+    title.style.height = "30%";
+    title.style.width = "30%";
+    anime({
+      targets: currentClone,
+      width: "70%",
+      height: "70%",
+      translateX: "-70%",
+      translateY: "-68%",
+    })
+    const anim2 = title.animate({ transform: "translateX(63%) translateY(58%)" }, { duration: 1000, easing: "ease-in-out" })
+    anim2.onfinish = function () {
+      title.style.transform = "translateX(63%) translateY(58%)"
+      setTimeout(() => {
+        anime({
+          targets: currentClone,
+          translateX: "-172%",
+          translateY: "-172%",
+          easing: "easeInOutQuad",
+        })
+        anime({
+          targets: title,
+          width: "98%",
+          height: "95%",
+          translateX: "-50%",
+          translateY: "-50%",
+          easing: "easeInOutQuad",
+          complete: function (anim) {
+            const text = document.getElementById("text");
+            const subtext = document.getElementById("subtext")
+            const target = [text, subtext]
+            
+            const loader = document.getElementById("loader")
+            anime({
+              targets: loader,
+              opacity: 0,
+              duration: 500,
+              complete: () => {
+                loader.style.display = "none";
+                loader.style.opacity = "0";
+                anime({
+                  targets: target,
+                  opacity: 1,
+                })
+              }
+            })
+          }
+          })
+      }, 500)
+    }
+  }
+
+  function similarity(s1, s2) {
+    var longer = s1;
+    var shorter = s2;
+    if (s1.length < s2.length) {
+      longer = s2;
+      shorter = s1;
+    }
+    var longerLength = longer.length;
+    if (longerLength == 0) {
+      return 1.0;
+    }
+    return (longerLength - editDistance(longer, shorter)) / parseFloat(longerLength);
+  }
+
+  function editDistance(s1, s2) {
+    s1 = s1.toLowerCase();
+    s2 = s2.toLowerCase();
+
+    var costs = new Array();
+    for (var i = 0; i <= s1.length; i++) {
+      var lastValue = i;
+      for (var j = 0; j <= s2.length; j++) {
+        if (i == 0)
+          costs[j] = j;
+        else {
+          if (j > 0) {
+            var newValue = costs[j - 1];
+            if (s1.charAt(i - 1) != s2.charAt(j - 1))
+              newValue = Math.min(Math.min(newValue, lastValue),
+                costs[j]) + 1;
+            costs[j - 1] = lastValue;
+            lastValue = newValue;
+          }
+        }
+      }
+      if (i > 0)
+        costs[s2.length] = lastValue;
+    }
+    return costs[s2.length];
+  }
+
   var questions = []
   var currentcashelem
 
@@ -218,9 +494,12 @@ export default function Home() {
     } else if (q1.difficulty === "medium") {
       source.src = "2.mp4"
       bluramt = 10;
-    } else {
+    } else if (q1.difficulty === "hard") {
       source.src = "hard.mp4"
       bluramt = 5;
+    } else if (q1.difficulty === "final") {
+      source.src = "final.mp4";
+      bluramt = 7;
     }
     video.appendChild(source);
     video.muted = true;
@@ -251,16 +530,26 @@ export default function Home() {
     qtext.style.opacity = "0";
     qtext.style.transform = "scale(0)"
     qtext.style.fontSize = "70px"
+    questionText = qtext;
     const answergrid = document.createElement("div");
     answergrid.style.display = "grid";
     answergrid.style.margin = "auto";
     answergrid.style.gridTemplateColumns = "50% 50%";
+    answerGrid = answergrid;
     preElems.push(answergrid);
     clone.appendChild(answergrid);
-    var answers = [q1.correct_answer, ...q1.incorrect_answers];
+    var answers;
+    var shuffledAnswers;
+    if (q1.difficulty === "final") {
+      answers = ["Letter Writer", "Math", "Simon Says"]
+      shuffledAnswers = answers;
+    } else {
+      answers = [q1.correct_answer, ...q1.incorrect_answers];
+      shuffledAnswers = shuffleArray(answers);
+      console.log(shuffledAnswers)
+    }
     console.log(answers)
-    const shuffledAnswers = shuffleArray(answers);
-    console.log(shuffledAnswers)
+
     const text = qtext.innerHTML;
     let time = 0;
     const textarr = text.split(" ");
@@ -353,43 +642,57 @@ export default function Home() {
       answer.style.marginTop = "50px";
       answer.style.width = "100%";
       answer.style.backgroundColor = "#3e3e3ea1"
-      if (shuffledAnswers[i] === q1.correct_answer) {
+      if (q1.difficulty === "final") {
         answer.id = i;
-        setCorrectAnswer(i);
-        correctAnswerElem = answer;
         answer.onclick = () => {
-          if (q1.difficulty === "easy") {
-            checkAnswer(answer, 500, true);
-            answer.innerHTML = "$500";
-            answer.style.fontSize = "100px";
-          } else if (q1.difficulty === "medium") {
-            checkAnswer(answer, 1000, true);
-            answer.innerHTML = "$1000";
-            answer.style.fontSize = "100px";
-          } else {
-            checkAnswer(answer, 2000, true);
-            answer.innerHTML = "$2000";
-            answer.style.fontSize = "100px";
+          if (i === 0) {
+            chooseFinalAnswer("Letter");
+          } else if (i === 1) {
+            chooseFinalAnswer("Math");
+          } else if (i === 2) {
+            chooseFinalAnswer("Simon Says");
           }
         }
       } else {
-        answer.id = i;
-        answer.onclick = () => {
-          if (q1.difficulty === "easy") {
-            checkAnswer(answer, -500, false);
-            answer.innerHTML = "$500";
-            answer.style.fontSize = "100px";
-          } else if (q1.difficulty === "medium") {
-            checkAnswer(answer, -1000, false);
-            answer.innerHTML = "$1000";
-            answer.style.fontSize = "100px";
-          } else {
-            checkAnswer(answer, -2000, false);
-            answer.innerHTML = "$2000";
-            answer.style.fontSize = "100px";
+        if (shuffledAnswers[i] === q1.correct_answer) {
+          answer.id = i;
+          setCorrectAnswer(i);
+          correctAnswerElem = answer;
+          answer.onclick = () => {
+            if (q1.difficulty === "easy") {
+              checkAnswer(answer, 500, true);
+              answer.innerHTML = "$500";
+              answer.style.fontSize = "100px";
+            } else if (q1.difficulty === "medium") {
+              checkAnswer(answer, 1000, true);
+              answer.innerHTML = "$1000";
+              answer.style.fontSize = "100px";
+            } else {
+              checkAnswer(answer, 2000, true);
+              answer.innerHTML = "$2000";
+              answer.style.fontSize = "100px";
+            }
+          }
+        } else {
+          answer.id = i;
+          answer.onclick = () => {
+            if (q1.difficulty === "easy") {
+              checkAnswer(answer, -500, false);
+              answer.innerHTML = "$500";
+              answer.style.fontSize = "100px";
+            } else if (q1.difficulty === "medium") {
+              checkAnswer(answer, -1000, false);
+              answer.innerHTML = "$1000";
+              answer.style.fontSize = "100px";
+            } else {
+              checkAnswer(answer, -2000, false);
+              answer.innerHTML = "$2000";
+              answer.style.fontSize = "100px";
+            }
           }
         }
       }
+
       answerbuttons.push(answer);
       answergrid.appendChild(answer);
     }
@@ -473,12 +776,14 @@ export default function Home() {
                               easing: "easeInOutQuad",
                               complete: () => {
                                 setTimeout(() => {
-                                  anime({
-                                    targets: timerdiv,
-                                    opacity: 1,
-                                    scale: 1,
-                                    easing: "easeInOutQuad",
-                                  })
+                                  if (q1.difficulty !== "final") {
+                                    anime({
+                                      targets: timerdiv,
+                                      opacity: 1,
+                                      scale: 1,
+                                      easing: "easeInOutQuad",
+                                    })
+                                  }
                                   anime({
                                     targets: qtext,
                                     scale: "0.7",
@@ -666,6 +971,8 @@ export default function Home() {
       url: "https://rygb.tech:8443/getTriviaQuestions"
     }).then((response) => {
       questions = response.data.results;
+      questions.push({ category: "Final Round", type: "multiple", difficulty: "final", question: "Pick a game", correct_answer: "" })
+      console.log(questions)
       const carosel = document.getElementById("carosel");
       for (var i = 0; i < 10; i++) {
         const qdiv = document.createElement("button");
