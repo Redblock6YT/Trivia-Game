@@ -36,17 +36,42 @@ export default function Home() {
   const [correctAnswer, setCorrectAnswer] = useState(0);
   const [currentCash, setCurrentCash] = useState(0);
   var question = 0;
+  var currentAudio;
   var currentClone;
   var playerCash = 0;
+  var questionOver = false;
+  var correctAnswerElem
+  var timerStarted = false;
+  var playerElem;
 
   var elems = []
-  function correct(button, amt) {
-    console.log("correct")
+  function checkAnswer(button, amt, correct) {
+    if (!timerStarted) {
+      return;
+    }
+    timerStarted = false;
+    //fade out currentAudio
     anime({
-      targets: button,
-      backgroundColor: 'rgb(22 141 22)',
-      scale: 1.1,
+      targets: currentAudio,
+      volume: 0,
+      easing: "easeInOutQuad",
     })
+    questionOver = true;
+
+    if (correct) {
+      anime({
+        targets: button,
+        backgroundColor: 'rgb(22 141 22)',
+        scale: 1.1,
+      })
+    } else {
+      anime({
+        targets: button,
+        backgroundColor: 'rgb(155 2 12 / 63%)',
+        scale: 1.1,
+      })
+    }
+
     //make money jump and then go to the bottom
     console.log(button)
     anime({
@@ -56,8 +81,8 @@ export default function Home() {
       duration: 1000,
     })
     //split correct and i from the id of button
-    const s = button.id.split("correct")
-    const id = s[1]
+    //const s = button.id.split("correct")
+    const id = button.id
     console.log("id: " + id)
     setTimeout(() => {
       var translateX = "0px"
@@ -92,15 +117,44 @@ export default function Home() {
         button.style.opacity = "0"
         const playercash = document.getElementById("playercash");
         playercash.innerHTML = "$" + (playerCash + amt)
-        var ml = 70;
-        if (amt >= 1000) {
-          ml = 80;
+        var color = "rgb(22 141 22)"
+        if (correct === false) {
+          color = "rgb(155 2 12 / 63%)"
+          const rand = Math.floor(Math.random() * 4) + 1
+          const audio = new Audio("wrong" + rand + ".wav")
+          audio.play()
+        } else {
+          const audio = new Audio("correct.wav")
+          audio.play()
         }
+        const rand = Math.floor(Math.random() * 6) + 1
+        var audio;
+        if (rand == 1) {
+          audio = new Audio("blues.wav")
+          audio.play()
+        } else if (rand == 2) {
+          audio = new Audio("funk.wav")
+          audio.play()
+        } else if (rand == 3) {
+          audio = new Audio("nawlins.wav")
+          audio.play()
+        } else if (rand == 4) {
+          audio = new Audio("polka.wav")
+          audio.play()
+        } else if (rand == 5) {
+          audio = new Audio("clav.wav")
+          audio.play()
+        } else if (rand == 6) {
+          audio = new Audio("seris.wav")
+          audio.play()
+        }
+        audio.loop = true;
+        currentAudio = audio;
+        //shake and change 
         anime({
           targets: playercash,
           scale: 1.1,
-          color: "rgb(22 141 22)",
-          marginLeft: ml,
+          color: color,
           complete: function (anim) {
             setCurrentCash(currentCash + amt)
             playerCash = playerCash + amt;
@@ -110,35 +164,20 @@ export default function Home() {
               color: "rgb(255 255 255)",
               complete: function (anim) {
                 console.log(elems)
-                anime({
-                  targets: elems,
-                  opacity: 0,
-                  delay: anime.stagger(15),
-                  complete: function () {
-                    elems[0].style.opacity = "1"
-                    anime({
-                      targets: elems[0],
-                      fontSize: "200px",
-                    })
-                    const anim = maintextcontainer.animate({transform: "translateX(-50%) translateY(-50%)" }, { duration: 1000, easing: "ease-in-out" })
-                    anim.onfinish = function () {
-                      maintextcontainer.style.transform = "translateX(-50%) translateY(-50%)"
-                      setTimeout(() => {
-                        anime({
-                          targets: currentClone,
-                          width: "70%",
-                          height: "70%",
-                          translateX: "-70%",
-                          translateY: "-68%",
-                        })
-                        playercash.remove()
-                        nextQuestion()
-                      }, 500)
-                    }
-                    elems[0].innerHTML = question
-                  }
-                })
-
+                showCorrectAnswer()
+                setTimeout(() => {
+                  anime({
+                    targets: currentClone,
+                    width: "70%",
+                    height: "70%",
+                    translateX: "-70%",
+                    translateY: "-68%",
+                    easing: "easeInOutQuad",
+                  })
+                  playercash.remove()
+                  playerElem.style.marginBottom = "0px"
+                  nextQuestion()
+                }, 2000)
               }
             })
           }
@@ -162,6 +201,7 @@ export default function Home() {
     })
     */
     question++;
+    questionOver = false;
     const title = document.getElementById("title");
     const container = document.getElementById("container");
     const clone = title.cloneNode();
@@ -169,7 +209,7 @@ export default function Home() {
     const video = document.createElement("video");
     const source = document.createElement("source");
     source.type = "video/mp4";
-    const q1 = questions[question];
+    const q1 = questions[question - 1];
     console.log(q1.difficulty)
     var bluramt = 5;
     if (q1.difficulty === "easy") {
@@ -224,8 +264,8 @@ export default function Home() {
     const text = qtext.innerHTML;
     let time = 0;
     const textarr = text.split(" ");
-    for(let i = 0; i < textarr.length; i++) {
-      time+= 1;
+    for (let i = 0; i < textarr.length; i++) {
+      time += 1;
     }
     questionContainer.appendChild(qtext);
     clone.appendChild(questionContainer);
@@ -234,13 +274,7 @@ export default function Home() {
     const playercash = document.createElement("p");
     const player = document.createElement("h1");
     //make cash overlap with player
-    var ml = 40;
-        if (playerCash >= 1000) {
-          ml = 80;
-        } else if (playerCash >= 100) {
-          ml = 70
-        }
-    playercash.style.position = "absolute";
+    //playercash.style.position = "absolute";
     playercash.style.bottom = "0";
     playercash.style.left = "0";
     playercash.style.marginLeft = "0";
@@ -248,11 +282,12 @@ export default function Home() {
     playercash.style.fontSize = "50px";
     playercash.style.color = "white";
     playercash.style.textShadow = "0px 0px 10px black";
-    playercash.style.marginLeft = ml
     playercash.id = "playercash";
     player.innerHTML = "1";
     player.className = styles.text;
     player.style.fontSize = "80px";
+    playerElem = player;
+    player.style.marginBottom = "-30px"
     if (q1.difficulty === "easy") {
       player.style.color = "rgb(78 141 255 / 35%)";
     } else if (q1.difficulty === "medium") {
@@ -319,31 +354,39 @@ export default function Home() {
       answer.style.width = "100%";
       answer.style.backgroundColor = "#3e3e3ea1"
       if (shuffledAnswers[i] === q1.correct_answer) {
-        answer.id = "correct" + i;
+        answer.id = i;
         setCorrectAnswer(i);
+        correctAnswerElem = answer;
         answer.onclick = () => {
           if (q1.difficulty === "easy") {
-            correct(answer, 500, 1);
+            checkAnswer(answer, 500, true);
             answer.innerHTML = "$500";
             answer.style.fontSize = "100px";
           } else if (q1.difficulty === "medium") {
-            correct(answer, 1000, 1);
+            checkAnswer(answer, 1000, true);
             answer.innerHTML = "$1000";
             answer.style.fontSize = "100px";
           } else {
-            correct(answer, 2000, 1);
+            checkAnswer(answer, 2000, true);
             answer.innerHTML = "$2000";
             answer.style.fontSize = "100px";
           }
         }
       } else {
+        answer.id = i;
         answer.onclick = () => {
           if (q1.difficulty === "easy") {
-            wrong(500, 1);
+            checkAnswer(answer, -500, false);
+            answer.innerHTML = "$500";
+            answer.style.fontSize = "100px";
           } else if (q1.difficulty === "medium") {
-            wrong(1000, 1);
+            checkAnswer(answer, -1000, false);
+            answer.innerHTML = "$1000";
+            answer.style.fontSize = "100px";
           } else {
-            wrong(2000, 1);
+            checkAnswer(answer, -2000, false);
+            answer.innerHTML = "$2000";
+            answer.style.fontSize = "100px";
           }
         }
       }
@@ -352,7 +395,7 @@ export default function Home() {
     }
     clone.style.height = "30%"
     clone.style.transform = "translate(170%, 58%)";
-    
+
     var rand = Math.floor(Math.random() * 4) + 1;
     const audio = new Audio("question" + rand + "a.mp3");
     const audio2 = new Audio("question" + rand + "b.mp3");
@@ -369,11 +412,12 @@ export default function Home() {
       setTimeout(() => {
         anime({
           targets: currentClone,
-          translateX: "-170%",
-          translateY: "-170%",
+          translateX: "-172%",
+          translateY: "-172%",
           easing: "easeInOutQuad",
         })
         currentClone = clone;
+        triggerWhatsNext();
         anime({
           targets: clone,
           width: "80%",
@@ -382,7 +426,6 @@ export default function Home() {
           translateY: "-50%",
           easing: "easeInOutQuad",
           complete: () => {
-            triggerWhatsNext();
             setTimeout(() => {
               const carosel = document.getElementById("carosel");
               carosel.children[0].style.boxShadow = "10px 10px 33px #08080854, -9px -9px 33px #00000046";
@@ -390,154 +433,175 @@ export default function Home() {
             }, 1000)
             setTimeout(() => {
               anime({
+                targets: currentAudio,
+                volume: 0,
+                easing: "easeInOutQuad",
+              })
+              anime({
                 targets: clone,
                 width: "98%",
                 height: "95%",
+                easing: "easeInOutQuad",
                 complete: () => {
                   setTimeout(() => {
+                    const hudon = new Audio("hud_on.wav")
+                    hudon.play();
                     anime({
                       targets: catagory,
                       rotate: 360,
                       fontSize: "90px",
                       complete: () => {
+                        audio.play();
+                        currentAudio = audio;
+                        audio2.volume = 0;
+                        audio2.play();
+                        anime({
+                          targets: catagory,
+                          fontSize: "50px"
+                        })
+                        anime({
+                          targets: textContainer,
+                          translateY: "-730%",
+                          translateX: "-50%",
+                          complete: () => {
+                            qtext.style.display = "block";
+                            //generate random number 1 - 3
+                            anime({
+                              targets: qtext,
+                              opacity: 1,
+                              scale: 1,
+                              easing: "easeInOutQuad",
+                              complete: () => {
+                                setTimeout(() => {
+                                  anime({
+                                    targets: timerdiv,
+                                    opacity: 1,
+                                    scale: 1,
+                                    easing: "easeInOutQuad",
+                                  })
+                                  anime({
+                                    targets: qtext,
+                                    scale: "0.7",
+                                    marginTop: "-350px",
+                                    easing: "easeInOutQuad",
+                                    complete: () => {
+                                      textContainer.style.width = "85%"
+                                      audio.pause();
+
+                                      //calculate the time to read the answers
+                                      let timea = 0;
+                                      for (let i = 0; i < answers.length; i++) {
+                                        timea += 1;
+                                      }
+                                      for (let i = 0; i < answerbuttons.length; i++) {
+                                        anime({
+                                          targets: answerbuttons[i],
+                                          opacity: 1,
+                                          marginTop: "0px",
+                                          delay: 100 * i,
+                                        })
+                                      }
+                                      if (!questionOver) {
+                                        audio2.pause();
+                                        const audio3 = new Audio("question" + rand + "c.mp3");
+                                        audio3.play();
+                                        timerStarted = true;
+                                        currentAudio = audio3;
+                                        let timet = 2;
+                                        let timet2 = 0;
+                                        var i = 0;
+                                        let timerint = setInterval(() => {
+                                          //every 10 seconds, subtract 1 from timet
+                                          if (i % 10 === 0) {
+                                            timet--;
+                                            if (timet === 0) {
+                                              timer2.style.marginRight = "2px"
+                                            }
+                                            const anim = timer.animate({ opacity: 0, marginTop: "-50px" }, { duration: 300, easing: "ease-in-out" })
+                                            anim.onfinish = function () {
+                                              timer.innerHTML = timet;
+                                              timer.style.marginTop = "50px"
+                                              timer.style.opacity = "0"
+                                              const anim2 = timer.animate({ opacity: 1, marginTop: "0px" }, { duration: 300, easing: "ease-in-out" })
+                                              anim2.onfinish = function () {
+                                                timer.style.opacity = "1"
+                                                timer.style.marginTop = "0px"
+                                              }
+                                            }
+                                            /*
+                                            anime({
+                                              targets: timer,
+                                              opacity: 0,
+                                              marginTop: "-50px",
+                                            }).complete = () => {
+                                              timer.innerHTML = timet;
+                                              timer.style.marginTop = "50px";
+                                              anime({
+                                                targets: timer,
+                                                opacity: 1,
+                                                marginTop: "0px",
+                                              })
+                                            }
+                                            */
+                                          }
+                                          //every second, subtract 1 from time 2
+                                          if (timet2 === 0) {
+                                            timet2 = 10;
+                                          }
+                                          timet2--;
+                                          /*
+                                          anime({
+                                            targets: timer2,
+                                            opacity: 0,
+                                            marginTop: "-50px",
+                                          }).complete = () => {
+                                            timer2.innerHTML = timet2;
+                                            timer2.style.marginTop = "50px";
+                                            anime({
+                                              targets: timer2,
+                                              opacity: 1,
+                                              marginTop: "0px",
+                                            })
+                                          }
+                                          */
+                                          const anim = timer2.animate({ opacity: 0, marginTop: "-50px" }, { duration: 300, easing: "ease-in-out" })
+                                          anim.onfinish = function () {
+                                            timer2.innerHTML = timet2;
+                                            timer2.style.marginTop = "50px"
+                                            timer2.style.opacity = "0"
+                                            const anim2 = timer2.animate({ opacity: 1, marginTop: "0px" }, { duration: 300, easing: "ease-in-out" })
+                                            anim2.onfinish = function () {
+                                              timer2.style.opacity = "1"
+                                              timer2.style.marginTop = "0px"
+                                            }
+                                          }
+                                          i++;
+                                          if (i == 20) {
+                                            clearInterval(timerint);
+                                            anime({
+                                              targets: audio3,
+                                              volume: 0,
+                                              easing: "easeInOutQuad",
+                                            })
+                                          }
+                                        }, 1000)
+                                      } else {
+                                        return;
+                                      }
+
+                                    }
+                                  })
+                                }, time * 300)
+                              }
+                            })
+                          }
+                        })
                         anime({
                           targets: video,
                           filter: "blur(" + bluramt + "px)",
                           complete: () => {
                             //move catagory text to the top
-                            audio.play();
-                            audio2.volume = 0;
-                            audio2.play();
-                            anime({
-                              targets: catagory,
-                              fontSize: "50px"
-                            })
-                            anime({
-                              targets: textContainer,
-                              translateY: "-730%",
-                              translateX: "-50%",
-                              complete: () => {
-                                qtext.style.display = "block";
-                                //generate random number 1 - 3
-                                anime({
-                                  targets: qtext,
-                                  opacity: 1,
-                                  scale: 1,
-                                  easing: "easeInOutQuad",
-                                  complete: () => {
-                                    setTimeout(() => {
-                                      anime({
-                                        targets: timerdiv,
-                                        opacity: 1,
-                                        scale: 1,
-                                        easing: "easeInOutQuad",
-                                      })
-                                      anime({
-                                        targets: qtext,
-                                        scale: "0.7",
-                                        marginTop: "-350px",
-                                        easing: "easeInOutQuad",
-                                        complete: () => {
-                                          audio2.volume = 1;
-                                          audio.pause();
-                                          //calculate the time to read the answers
-                                          let timea = 0;
-                                          for (let i = 0; i < answers.length; i++) {
-                                            timea += 1;
-                                          }
-                                          for (let i = 0; i < answerbuttons.length; i++) {
-                                            anime({
-                                              targets: answerbuttons[i],
-                                              opacity: 1,
-                                              marginTop: "0px",
-                                              delay: 100 * i,
-                                            })
-                                          }
-                                          setTimeout(() => {
-                                            audio2.pause();
-                                            const audio3 = new Audio("question" + rand + "c.mp3");
-                                            audio3.play();
-                                            let timet = 2;
-                                            let timet2 = 0;
-                                            var i = 0;
-                                            let timerint = setInterval(() => {
-                                              //every 10 seconds, subtract 1 from timet
-                                              if (i % 10 === 0) {
-                                                timet--;
-                                                if (timet === 0) {
-                                                  timer2.style.marginRight = "2px"
-                                                }
-                                                const anim = timer.animate({ opacity: 0, marginTop: "-50px" }, { duration: 300, easing: "ease-in-out" })
-                                                anim.onfinish = function () {
-                                                  timer.innerHTML = timet;
-                                                  timer.style.marginTop = "50px"
-                                                  timer.style.opacity = "0"
-                                                  const anim2 = timer.animate({ opacity: 1, marginTop: "0px" }, { duration: 300, easing: "ease-in-out" })
-                                                  anim2.onfinish = function () {
-                                                    timer.style.opacity = "1"
-                                                    timer.style.marginTop = "0px"
-                                                  }
-                                                }
-                                                /*
-                                                anime({
-                                                  targets: timer,
-                                                  opacity: 0,
-                                                  marginTop: "-50px",
-                                                }).complete = () => {
-                                                  timer.innerHTML = timet;
-                                                  timer.style.marginTop = "50px";
-                                                  anime({
-                                                    targets: timer,
-                                                    opacity: 1,
-                                                    marginTop: "0px",
-                                                  })
-                                                }
-                                                */
-                                              }
-                                              //every second, subtract 1 from time 2
-                                              if (timet2 === 0) {
-                                                timet2 = 10;
-                                              }
-                                              timet2--;
-                                              /*
-                                              anime({
-                                                targets: timer2,
-                                                opacity: 0,
-                                                marginTop: "-50px",
-                                              }).complete = () => {
-                                                timer2.innerHTML = timet2;
-                                                timer2.style.marginTop = "50px";
-                                                anime({
-                                                  targets: timer2,
-                                                  opacity: 1,
-                                                  marginTop: "0px",
-                                                })
-                                              }
-                                              */
-                                              const anim = timer2.animate({ opacity: 0, marginTop: "-50px" }, { duration: 300, easing: "ease-in-out" })
-                                              anim.onfinish = function () {
-                                                timer2.innerHTML = timet2;
-                                                timer2.style.marginTop = "50px"
-                                                timer2.style.opacity = "0"
-                                                const anim2 = timer2.animate({ opacity: 1, marginTop: "0px" }, { duration: 300, easing: "ease-in-out" })
-                                                anim2.onfinish = function () {
-                                                  timer2.style.opacity = "1"
-                                                  timer2.style.marginTop = "0px"
-                                                }
-                                              }
-                                              i++;
-                                              if (i == 20) {
-                                                clearInterval(timerint);
-                                              }
-                                            }, 1000)
-                                          }, timea * 1000)
-                                        }
-                                      })
-                                    }, time * 300)
-                                  }
-                                })
-                              }
-                            })
+
                           }
                         })
                       }
@@ -555,8 +619,12 @@ export default function Home() {
     };
   }
 
-  function wrong(money, question) {
-
+  function showCorrectAnswer() {
+    anime({
+      targets: correctAnswerElem,
+      scale: 1.1,
+      backgroundColor: 'rgb(22 141 22)',
+    })
   }
 
   var maintextcontainer;
@@ -599,72 +667,48 @@ export default function Home() {
     }).then((response) => {
       questions = response.data.results;
       const carosel = document.getElementById("carosel");
-      for (var i = 0; i < 5; i++) {
-        const qdiv = document.createElement("div");
-        const qtext = document.createElement("h1");
+      for (var i = 0; i < 10; i++) {
+        const qdiv = document.createElement("button");
         qdiv.className = styles.minithumbnail;
         qdiv.style.transform = "translateY(110px)"
-        qtext.innerHTML = i + 1;
-        qtext.className = styles.text;
-        qdiv.appendChild(qtext);
+        qdiv.innerHTML = i + 1;
         carosel.appendChild(qdiv);
       }
-      const qdiv2 = document.createElement("div");
-      const qtext2 = document.createElement("h1");
-      qdiv2.className = styles.minithumbnail;
-      qdiv2.style.transform = "translateY(110px)"
-      qtext2.innerHTML = "ROUND 2";
-      qtext2.className = styles.text;
-      qdiv2.appendChild(qtext2);
-      carosel.appendChild(qdiv2);
-      for (var i = 5; i < 5; i++) {
-        const qdiv = document.createElement("div");
-        const qtext = document.createElement("h1");
-        qdiv.style.transform = "translateY(110px)"
-        qdiv.className = styles.minithumbnail;
-  
-        qtext.innerHTML = i + 1;
-        qtext.className = styles.text;
-        qdiv.appendChild(qtext);
-        carosel.appendChild(qdiv);
-      }
-      const qdiv3 = document.createElement("div");
-      const qtext3 = document.createElement("h1");
-      qdiv3.className = styles.minithumbnail;
-      qdiv3.style.transform = "translateY(110px)"
-      qtext3.innerHTML = "FINAL ROUND";
-      qtext3.className = styles.text;
-      qdiv3.appendChild(qtext3);
-      carosel.appendChild(qdiv3);
       nextQuestion();
     })
-    
+
   }
 
   function triggerWhatsNext() {
     const carosel = document.getElementById("carosel");
-    const audio = new Audio("outro.mp3");
-    //fade out audio
-    anime({
-      targets: audio,
-      volume: 0,
-      duration: 1500,
-      easing: "easeInOutQuad",
-    })
-    audio.play();
     anime({
       targets: carosel.children,
       translateY: "0px",
-      delay: anime.stagger(100),
+      delay: anime.stagger(50),
       complete: () => {
+        anime({
+          targets: carosel.children[question - 1],
+          scale: 1.1,
+          backgroundColor: "rgb(22 141 22)",
+        })
+        /*
+        setTimeout(() => {
+          anime({
+            targets: carosel.children[question - 1],
+            scale: 1,
+            backgroundColor: "rgb(22 141 22)",
+          })
+        }, 1200)
+        */
         setTimeout(() => {
           anime({
             targets: carosel.children,
             translateY: "110px",
+            scale: 1,
             delay: anime.stagger(50),
             easing: "easeInOutQuad",
           })
-        }, 600)
+        }, 1500)
       }
     })
   }
@@ -687,7 +731,6 @@ export default function Home() {
             <p id="subtext" className={styles.subtext} style={{ position: "relative" }}>by RYGB</p>
             <div id="loader" className={styles.circle2}></div>
             <div className={styles.doublegrid}>
-              <input className={styles.ename} placeholder="What's your name?"></input>
               <button className={styles.button} onClick={() => startGame()}>Play</button>
             </div>
           </div>
