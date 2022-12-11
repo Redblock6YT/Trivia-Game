@@ -48,7 +48,7 @@ export default function Home() {
 
   var elems = []
   function checkAnswer(button, amt, correct) {
-    if (!timerStarted) {
+    if (!timerStarted || questionOver) {
       return;
     }
     timerStarted = false;
@@ -170,10 +170,10 @@ export default function Home() {
                 setTimeout(() => {
                   anime({
                     targets: currentClone,
-                    width: "70%",
-                    height: "70%",
-                    translateX: "-70%",
-                    translateY: "-68%",
+                    width: "80%",
+                    height: "80%",
+                    translateX: "-61%",
+                    translateY: "-59%",
                     easing: "easeInOutQuad",
                   })
                   playercash.remove()
@@ -760,19 +760,17 @@ export default function Home() {
                         audio2.play();
                         anime({
                           targets: catagory,
-                          fontSize: "50px"
-                        })
-                        anime({
-                          targets: textContainer,
-                          translateY: "-730%",
-                          translateX: "-50%",
+                          scale: 0,
+                          duration: 500,
+                          easing: "easeInOutQuad",
                           complete: () => {
                             qtext.style.display = "block";
                             //generate random number 1 - 3
                             anime({
                               targets: qtext,
                               opacity: 1,
-                              scale: 1,
+                              scale: 0.7,
+                              duration: 500,
                               easing: "easeInOutQuad",
                               complete: () => {
                                 setTimeout(() => {
@@ -786,8 +784,9 @@ export default function Home() {
                                   }
                                   anime({
                                     targets: qtext,
-                                    scale: "0.7",
-                                    marginTop: "-350px",
+                                    scale: "0.6",
+                                    fontSize: "4vw",
+                                    marginTop: "-45vh",
                                     easing: "easeInOutQuad",
                                     complete: () => {
                                       textContainer.style.width = "85%"
@@ -942,6 +941,7 @@ export default function Home() {
     const target = [text, subtext]
     console.log("startGame() called")
     currentClone = title
+    question = 0;
     anime({
       targets: target,
       opacity: 0,
@@ -960,10 +960,10 @@ export default function Home() {
 
     anime({
       targets: title,
-      width: "70%",
-      height: "70%",
-      translateX: "-70%",
-      translateY: "-68%",
+      width: "80%",
+      height: "80%",
+      translateX: "-61%",
+      translateY: "-59%",
     })
 
     axios({
