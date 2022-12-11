@@ -35,7 +35,7 @@ export default function Home() {
   }
   const [correctAnswer, setCorrectAnswer] = useState(0);
   const [currentCash, setCurrentCash] = useState(0);
-  var question = 0;
+  var question = 10;
   var currentAudio;
   var currentClone;
   var playerCash = 0;
@@ -186,6 +186,38 @@ export default function Home() {
         })
       }, 300);
     }, 500)
+  }
+
+  var currentTimer;
+  var timerc;
+  var timer2c;
+  var currentBackground;
+  const [correctAnswerFinal, setCorrectAnswerFinal] = useState(27);
+  var currentInput;
+  const [currentInputState, setCurrentInputState] = useState("");
+  const [currentValue, setCurrentValue] = useState("");
+  const debouncedValue = useDebounce(currentValue, 500);
+  const [currentQuestionText, setCurrentQuestionText] = useState("");
+
+  function useDebounce(value, delay) {
+    // State and setters for debounced value
+    const [debouncedValue, setDebouncedValue] = useState(value);
+    useEffect(
+      () => {
+        // Update debounced value after delay
+        const handler = setTimeout(() => {
+          setDebouncedValue(value);
+        }, delay);
+        // Cancel the timeout if value changes (also on delay change or unmount)
+        // This is how we prevent debounced value from updating if value is changed ...
+        // .. within the delay period. Timeout gets cleared and restarted.
+        return () => {
+          clearTimeout(handler);
+        };
+      },
+      [value, delay] // Only re-call effect if value or delay changes
+    );
+    return debouncedValue;
   }
 
   function chooseFinalAnswer(final) {
@@ -363,8 +395,264 @@ export default function Home() {
         }
       })
       //const audio = new Audio("letter.mp3")
+    } else if (final == "Math") {
+      var rand = Math.floor(Math.random() * 2) + 5;
+      const audio = new Audio("question" + rand + "a.mp3")
+      audio.loop = true;
+      audio.load()
+      const audio2 = new Audio("question" + rand + "c.mp3")
+      audio2.loop = true;
+      audio2.load()
+      anime({
+        targets: questionText,
+        scale: 0,
+        duration: 500,
+        easing: "easeInOutQuad",
+        complete: function (anim) {
+          currentAudio = audio;
+          questionText.style.marginTop = "0px"
+          audio.play()
+          currentBackground.children[0].src = "math.mp4"
+          const textAreaContainer = document.createElement("div")
+          textAreaContainer.style.display = "grid";
+          textAreaContainer.style.gridTemplateColumns = "auto";
+          textAreaContainer.style.margin = "auto";
+          textAreaContainer.style.gridTemplateColumns = "auto";
+          textAreaContainer.style.position = "absolute";
+          textAreaContainer.style.zIndex = "100";
+          textAreaContainer.style.gridGap = "15px";
+          textAreaContainer.style.width = "50%"
+          textAreaContainer.style.top = "50%";
+          textAreaContainer.style.left = "50%";
+          textAreaContainer.style.transform = "translate(-50%, -40%) scale(0)";
+          textAreaContainer.id = "textAreaContainer"
+          const input = document.createElement("input")
+          input.className = styles.ename;
+          input.placeholder = "Answer"
+          input.style.opacity = "0";
+          setCorrectAnswerFinal(27)
+          currentInput = input;
+          setCurrentInputState(input)
+          input.oninput = () => inputFinal()
+          textAreaContainer.appendChild(input)
+          currentClone.appendChild(textAreaContainer)
+          timerc.innerHTML = "3"
+          questionText.innerHTML = "Answer math questions to earn cash. Answer the most questions before the time runs out."
+          anime({
+            targets: currentTimer,
+            scale: 1,
+            opacity: 1,
+            duration: 500,
+            easing: "easeInOutQuad",
+          })
+          anime({
+            targets: [questionText, textAreaContainer],
+            scale: 1,
+            opacity: 1,
+            duration: 500,
+            easing: "easeInOutQuad",
+            complete: function (anim) {
+              setTimeout(() => {
+                input.style.opacity = "1";
+                questionText.innerHTML = "9 x 3"
+                currentBackground.playbackRate = 4;
+                currentBackground.style.filter = "brightness(0.5) blur(7px)"
+                anime({
+                  targets: questionText,
+                  marginTop: "-45vh",
+                  fontSize: "4vw",
+                  scale: "0.6",
+                  rotate3d: "0, 1, 0, 360deg",
+                  duration: 500,
+                  easing: "easeInOutQuad",
+                  complete: function (anim) {
+                    audio.pause();
+                    audio2.play()
+                    currentAudio = audio2;
+                    let timet = 3;
+                    let timet2 = 0;
+                    var i = 0;
+                    let timerint = setInterval(() => {
+                      //every 10 seconds, subtract 1 from timet
+                      if (i % 10 === 0) {
+                        timet--;
+                        if (timet === 0) {
+                          timer2c.style.marginRight = "2px"
+                        }
+                        const anim = timerc.animate({ opacity: 0, marginTop: "-50px" }, { duration: 300, easing: "ease-in-out" })
+                        anim.onfinish = function () {
+                          timerc.innerHTML = timet;
+                          timerc.style.marginTop = "50px"
+                          timerc.style.opacity = "0"
+                          const anim2 = timerc.animate({ opacity: 1, marginTop: "0px" }, { duration: 300, easing: "ease-in-out" })
+                          anim2.onfinish = function () {
+                            timerc.style.opacity = "1"
+                            timerc.style.marginTop = "0px"
+                          }
+                        }
+                        /*
+                        anime({
+                          targets: timer,
+                          opacity: 0,
+                          marginTop: "-50px",
+                        }).complete = () => {
+                          timer.innerHTML = timet;
+                          timer.style.marginTop = "50px";
+                          anime({
+                            targets: timer,
+                            opacity: 1,
+                            marginTop: "0px",
+                          })
+                        }
+                        */
+                      }
+                      //every second, subtract 1 from time 2
+                      if (timet2 === 0) {
+                        timet2 = 10;
+                      }
+                      timet2--;
+                      /*
+                      anime({
+                        targets: timer2,
+                        opacity: 0,
+                        marginTop: "-50px",
+                      }).complete = () => {
+                        timer2.innerHTML = timet2;
+                        timer2.style.marginTop = "50px";
+                        anime({
+                          targets: timer2,
+                          opacity: 1,
+                          marginTop: "0px",
+                        })
+                      }
+                      */
+                      const anim = timer2c.animate({ opacity: 0, marginTop: "-50px" }, { duration: 300, easing: "ease-in-out" })
+                      anim.onfinish = function () {
+                        timer2c.innerHTML = timet2;
+                        timer2c.style.marginTop = "50px"
+                        timer2c.style.opacity = "0"
+                        const anim2 = timer2c.animate({ opacity: 1, marginTop: "0px" }, { duration: 300, easing: "ease-in-out" })
+                        anim2.onfinish = function () {
+                          timer2c.style.opacity = "1"
+                          timer2c.style.marginTop = "0px"
+                        }
+                      }
+                      i++;
+                      if (i == 30) {
+                        clearInterval(timerint);
+                        anime({
+                          targets: audio2,
+                          volume: 0,
+                          easing: "easeInOutQuad",
+                        })
+                        backToTitle()
+                      }
+                    }, 1000)
+                  }
+                })
+              }, 3000)
+            }
+          })
+        }
+      })
     }
   }
+
+  function inputFinal(input) {
+    console.log("input final")
+    setCurrentValue(currentInput.value)
+  }
+
+  function newQuestion() {
+    //generate a new math question and set the correct answer
+    const num1 = Math.floor(Math.random() * 10) + 1;
+    const num2 = Math.floor(Math.random() * 10) + 1;
+    const correctAnswer = num1 * num2;
+    setCorrectAnswerFinal(correctAnswer)
+    currentQuestionText.innerHTML = num1 + " x " + num2;
+  }
+
+  useEffect(() => {
+    if (debouncedValue) {
+      console.log("debounced value")
+      var color = "rgb(22 141 22)"
+      console.log(correctAnswerFinal)
+      console.log(currentValue)
+      if (parseInt(currentValue) == correctAnswerFinal) {
+        console.log("right")
+        console.log(currentInputState)
+        const amt = 100;
+        const playercash = document.getElementById("playercash")
+        playercash.innerHTML = "$" + (currentCash + amt);
+        setCurrentCash(currentCash + amt)
+        playerCash = playerCash + amt;
+        console.log(playerCash)
+        console.log(currentCash)
+        newQuestion()
+        currentInputState.value = ""
+        currentInputState.oninput = () => inputFinal()
+        currentInput = currentInputState
+        anime({
+          targets: currentInputState,
+          backgroundColor: "rgb(22 141 22)",
+        })
+        const audio = new Audio("correct.wav")
+        audio.play()
+        anime({
+          targets: playercash,
+          scale: 1.1,
+          color: color,
+          complete: function (anim) {
+            setCurrentCash(currentCash + amt)
+            playerCash = playerCash + amt;
+            anime({
+              targets: playercash,
+              scale: 1,
+              color: "rgb(255 255 255)",
+              complete: function (anim) {
+              }
+            })
+          }
+        })
+      } else {
+        console.log("wrong")
+        color = "rgb(155 2 12 / 63%)"
+        const rand = Math.floor(Math.random() * 4) + 1
+        const audio = new Audio("wrong" + rand + ".wav")
+        const amt = -100;
+        const playercash = document.getElementById("playercash")
+        playercash.innerHTML = "$" + (currentCash + amt);
+        setCurrentCash(currentCash + amt)
+        playerCash = playerCash + amt;
+        console.log(playerCash)
+        console.log(currentCash)
+        audio.play()
+        console.log(currentInputState)
+        newQuestion()
+        currentInputState.value = ""
+        currentInputState.oninput = () => inputFinal()
+        currentInput = currentInputState
+        anime({
+          targets: currentInputState,
+          backgroundColor: "rgb(155 2 12 / 63%)",
+        })
+        anime({
+          targets: playercash,
+          scale: 1.1,
+          color: color,
+          complete: function (anim) {
+            anime({
+              targets: playercash,
+              scale: 1,
+              color: "rgb(255 255 255)",
+              complete: function (anim) {
+              }
+            })
+          }
+        })
+      }
+    }
+  }, [debouncedValue])
 
   function backToTitle() {
     const title = document.getElementById("title");
@@ -399,7 +687,7 @@ export default function Home() {
             const text = document.getElementById("text");
             const subtext = document.getElementById("subtext")
             const target = [text, subtext]
-            
+
             const loader = document.getElementById("loader")
             anime({
               targets: loader,
@@ -415,7 +703,7 @@ export default function Home() {
               }
             })
           }
-          })
+        })
       }, 500)
     }
   }
@@ -507,6 +795,7 @@ export default function Home() {
     video.loop = true;
     video.className = styles.video;
     video.style.filter = "blur(10px)";
+    currentBackground = video;
     clone.appendChild(video);
     const textContainer = document.createElement("div");
     textContainer.className = styles.textContainer;
@@ -523,6 +812,7 @@ export default function Home() {
     questionContainer.className = styles.textContainer2;
     qtext.className = styles.text;
     qtext.innerHTML = q1.question;
+
     textContainer.appendChild(catagory);
     preElems.push(questionContainer);
     maintextcontainer = textContainer;
@@ -530,6 +820,7 @@ export default function Home() {
     qtext.style.opacity = "0";
     qtext.style.transform = "scale(0)"
     qtext.style.fontSize = "70px"
+    setCurrentQuestionText(qtext);
     questionText = qtext;
     const answergrid = document.createElement("div");
     answergrid.style.display = "grid";
@@ -610,6 +901,7 @@ export default function Home() {
     timer.className = styles.text;
     timer.innerHTML = "2"
     timer.style.fontSize = "80px"
+    timerc = timer;
     preElems.push(timerdiv);
     //timer.style.width = "100%"
     timer.style.textAlign = "left";
@@ -619,9 +911,11 @@ export default function Home() {
     timer2.style.fontSize = "80px"
     //timer2.style.width = "100%"
     timer2.style.textAlign = "left";
+    timer2c = timer2;
     clone.appendChild(timerdiv)
     timerdiv.appendChild(timer);
     timerdiv.appendChild(timer2);
+    currentTimer = timerdiv;
     //make answergrid ontop of all over elements
     answergrid.style.zIndex = "100";
     answergrid.style.position = "absolute";
@@ -699,7 +993,7 @@ export default function Home() {
     clone.style.height = "30%"
     clone.style.transform = "translate(170%, 58%)";
 
-    var rand = Math.floor(Math.random() * 4) + 1;
+    var rand = Math.floor(Math.random() * 6) + 1;
     const audio = new Audio("question" + rand + "a.mp3");
     const audio2 = new Audio("question" + rand + "b.mp3");
     //preload audio
@@ -805,9 +1099,11 @@ export default function Home() {
                                           delay: 100 * i,
                                         })
                                       }
-                                      if (!questionOver) {
+                                      if (!questionOver && q1.difficulty !== "final") {
                                         audio2.pause();
                                         const audio3 = new Audio("question" + rand + "c.mp3");
+                                        audio3.loop = true;
+                                        audio3.load();
                                         audio3.play();
                                         timerStarted = true;
                                         currentAudio = audio3;
