@@ -1264,7 +1264,7 @@ export default function Home() {
 
     axios({
       method: "get",
-      url: "https://rygb.tech:8443/getTriviaQuestions"
+      url: "https://api.rygb.tech:8443/getTriviaQuestions"
     }).then((response) => {
       questions = response.data.results;
       questions.push({ category: "Final Round", type: "multiple", difficulty: "final", question: "Pick a game", correct_answer: "" })
